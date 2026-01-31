@@ -1,6 +1,6 @@
 # Student-Expense-Tracker
 Student Expense Tracker: A JavaFX/SQLite app. Features categorized tracking (meals, transport), a visual analytics via real-time charts. Built using SOLID and OOP, it ensures financial discipline through smart, modular architecture and data-driven insights.
-## 👥 Team Roles & Responsibilities
+## Team Roles & Responsibilities
 | Member                | Role                         | Responsibility |
 |:----------------------|:-----------------------------| :--- |
 | **Hanna Workalemahu** | **Project Lead**             | Model classes, Git management, Code Review |
