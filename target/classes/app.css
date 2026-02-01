@@ -1,0 +1,62 @@
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #f5f5f5;
+}
+
+.tab-pane {
+    -fx-background-color: white;
+}
+
+.tab-pane > .tab-header-area {
+    -fx-background-color: #e0e0e0;
+    -fx-padding: 4 0 0 4;
+}
+
+.tab {
+    -fx-background-color: #e0e0e0;
+    -fx-padding: 8 16;
+}
+
+.tab:selected {
+    -fx-background-color: white;
+}
+
+.button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.button.delete-btn {
+    -fx-background-color: #f44336;
+}
+
+.button.delete-btn:hover {
+    -fx-background-color: #d32f2f;
+}
+
+.table-view {
+    -fx-background-color: white;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fafafa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+}
+
+.spinner {
+    -fx-background-color: white;
+}
+
+.text-field, .date-picker, .combo-box {
+    -fx-background-color: white;
+}
