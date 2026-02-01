@@ -1,7 +1,5 @@
 package com.aau.se.expensetracker.view;
 
-public class ExpenseView {package com.aau.se.expensetracker.view;
-
 import com.aau.se.expensetracker.controller.ExpenseController;
 import com.aau.se.expensetracker.model.Expense;
 import com.aau.se.expensetracker.model.ExpenseCategory;
@@ -36,10 +34,6 @@ public class ExpenseView {
         form.setHgap(10);
         form.setVgap(8);
 
-        TextField nameField = new TextField();
-        nameField.setPromptText("Expense name");
-        nameField.setPrefWidth(220);
-
         Spinner<Double> amountSpinner = new Spinner<>(0.0, 1_000_000.0, 0.0, 0.5);
         amountSpinner.setEditable(true);
         amountSpinner.setPrefWidth(120);
@@ -52,23 +46,16 @@ public class ExpenseView {
         categoryCombo.getSelectionModel().selectFirst();
         categoryCombo.setPrefWidth(140);
 
-        form.add(new Label("Name:"), 0, 0);
-        form.add(nameField, 1, 0);
-        form.add(new Label("Amount:"), 0, 1);
-        form.add(amountSpinner, 1, 1);
-        form.add(new Label("Date:"), 0, 2);
-        form.add(datePicker, 1, 2);
-        form.add(new Label("Category:"), 0, 3);
-        form.add(categoryCombo, 1, 3);
+        form.add(new Label("Amount:"), 0, 0);
+        form.add(amountSpinner, 1, 0);
+        form.add(new Label("Date:"), 0, 1);
+        form.add(datePicker, 1, 1);
+        form.add(new Label("Category:"), 0, 2);
+        form.add(categoryCombo, 1, 2);
 
         Button addBtn = new Button("Add Expense");
         addBtn.setDefaultButton(true);
         addBtn.setOnAction(e -> {
-            String name = nameField.getText() != null ? nameField.getText().trim() : "";
-            if (name.isEmpty()) {
-                showAlert(Alert.AlertType.WARNING, "Name required", "Please enter an expense name.");
-                return;
-            }
             double amount = amountSpinner.getValue() != null ? amountSpinner.getValue() : 0;
             if (amount <= 0) {
                 showAlert(Alert.AlertType.WARNING, "Invalid amount", "Amount must be greater than 0.");
@@ -77,15 +64,25 @@ public class ExpenseView {
             LocalDate date = datePicker.getValue() != null ? datePicker.getValue() : LocalDate.now();
             ExpenseCategory cat = categoryCombo.getValue() != null ? categoryCombo.getValue() : ExpenseCategory.FOOD;
             try {
-                Expense added = expenseController.handleAddExpense(name, amount, date, cat);
+                Expense added = expenseController.handleAddExpense(amount, date, cat);
                 if (added != null) {
                     tableItems.add(new ExpenseTableItem(added));
-                    nameField.clear();
                     amountSpinner.getValueFactory().setValue(0.0);
                     datePicker.setValue(LocalDate.now());
+                    double remainingPct = expenseController.getRemainingPercent(cat);
+                    if (remainingPct > 0 && remainingPct < 19.5) {
+                        showAlert(Alert.AlertType.WARNING, "Budget warning", "Less than 20% left of your budget for this category.");
+                    } else if (remainingPct >= 19.5 && remainingPct <= 20.5) {
+                        showAlert(Alert.AlertType.WARNING, "Budget warning", "Only 20% left of your budget for this category.");
+                    }
                 }
             } catch (RuntimeException ex) {
-                showAlert(Alert.AlertType.ERROR, "Error", ex.getMessage());
+                String msg = ex.getMessage();
+                if (msg != null && msg.startsWith("Over budget:")) {
+                    showAlert(Alert.AlertType.ERROR, "Over budget", msg);
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", msg != null ? msg : ex.toString());
+                }
             }
         });
 
@@ -96,10 +93,6 @@ public class ExpenseView {
         TableView<ExpenseTableItem> table = new TableView<>(tableItems);
         table.setPlaceholder(new Label("No expenses yet. Add one above."));
         table.setPrefHeight(280);
-
-        TableColumn<ExpenseTableItem, String> nameCol = new TableColumn<>("Name");
-        nameCol.setCellValueFactory(c -> c.getValue().nameProperty());
-        nameCol.setPrefWidth(180);
 
         TableColumn<ExpenseTableItem, Number> amountCol = new TableColumn<>("Amount");
         amountCol.setCellValueFactory(c -> c.getValue().amountProperty());
@@ -135,7 +128,7 @@ public class ExpenseView {
             return cell;
         });
 
-        table.getColumns().addAll(nameCol, amountCol, dateCol, categoryCol, deleteCol);
+        table.getColumns().addAll(amountCol, dateCol, categoryCol, deleteCol);
 
         refreshTable();
 
@@ -164,14 +157,12 @@ public class ExpenseView {
      */
     public static class ExpenseTableItem {
         private final String id;
-        private final String name;
         private final double amount;
         private final String date;
         private final String category;
 
         public ExpenseTableItem(Expense e) {
             this.id = e.getId();
-            this.name = e.getName();
             this.amount = e.getAmount();
             this.date = e.getDate().toString();
             this.category = e.getCategory().name();
@@ -179,10 +170,6 @@ public class ExpenseView {
 
         public String getId() {
             return id;
-        }
-
-        public javafx.beans.property.SimpleStringProperty nameProperty() {
-            return new javafx.beans.property.SimpleStringProperty(name);
         }
 
         public javafx.beans.property.SimpleDoubleProperty amountProperty() {
@@ -197,5 +184,4 @@ public class ExpenseView {
             return new javafx.beans.property.SimpleStringProperty(category);
         }
     }
-}
 }
