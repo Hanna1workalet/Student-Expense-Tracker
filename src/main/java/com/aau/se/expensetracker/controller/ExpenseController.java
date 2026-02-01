@@ -1,4 +1,4 @@
-package com.aau.se.expensetracker.controller;//controller package means this class handles user actions
+package com.aau.se.expensetracker.controller;
 
 import com.aau.se.expensetracker.model.BasicExpense;//imported BasicExpense class 
 import com.aau.se.expensetracker.model.Expense;//imported Expense class 
@@ -14,7 +14,6 @@ import java.util.UUID;// to generate unique IDs for expenses
 
 /**
  * Handles user actions for adding and deleting expenses (Single Responsibility).
- * This class only controls user actions, nothing else.
  */
 public class ExpenseController {
 
