@@ -19,8 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * File-based implementation of ExpenseRepository.
- * Format per line: id|amount|date|category
- * Legacy: 5 parts id|name|amount|date|category is also accepted (name ignored).
+ * Format per line: id|name|amount|date|category
  */
 public class FileExpenseRepository implements ExpenseRepository {
 
@@ -125,33 +124,66 @@ public class FileExpenseRepository implements ExpenseRepository {
     }
 
     private String toLine(Expense e) {
-        return e.getId() + SEP + e.getAmount() + SEP + e.getDate() + SEP + e.getCategory().name();
+        return e.getId() + SEP + escape(e.getName()) + SEP + e.getAmount() + SEP
+                + e.getDate() + SEP + e.getCategory().name();
+    }
+
+    private static String escape(String s) {
+        if (s == null) return "";
+        return s.replace("|", "\\|").replace("\\", "\\\\");
+    }
+
+    private static String unescape(String s) {
+        if (s == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < s.length()) {
+                char next = s.charAt(i + 1);
+                if (next == '|' || next == '\\') {
+                    sb.append(next);
+                    i++;
+                    continue;
+                }
+            }
+            sb.append(c);
+        }
+        return sb.toString();
     }
 
     private Expense parseLine(String line) {
-        String[] parts = line.split("\\|", -1);
-        if (parts.length == 4) {
-            try {
-                String id = parts[0];
-                double amount = Double.parseDouble(parts[1]);
-                LocalDate date = LocalDate.parse(parts[2]);
-                ExpenseCategory category = ExpenseCategory.valueOf(parts[3]);
-                return new BasicExpense(id, amount, date, category);
-            } catch (Exception e) {
-                return null;
+        List<String> parts = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean escaped = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (escaped) {
+                current.append(c);
+                escaped = false;
+                continue;
             }
-        }
-        if (parts.length == 5) {
-            try {
-                String id = parts[0];
-                double amount = Double.parseDouble(parts[2]);
-                LocalDate date = LocalDate.parse(parts[3]);
-                ExpenseCategory category = ExpenseCategory.valueOf(parts[4]);
-                return new BasicExpense(id, amount, date, category);
-            } catch (Exception e) {
-                return null;
+            if (c == '\\') {
+                escaped = true;
+                continue;
             }
+            if (c == '|') {
+                parts.add(current.toString());
+                current = new StringBuilder();
+                continue;
+            }
+            current.append(c);
         }
-        return null;
+        parts.add(current.toString());
+        if (parts.size() != 5) return null;
+        try {
+            String id = parts.get(0);
+            String name = unescape(parts.get(1));
+            double amount = Double.parseDouble(parts.get(2));
+            LocalDate date = LocalDate.parse(parts.get(3));
+            ExpenseCategory category = ExpenseCategory.valueOf(parts.get(4));
+            return new BasicExpense(id, name, amount, date, category);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
