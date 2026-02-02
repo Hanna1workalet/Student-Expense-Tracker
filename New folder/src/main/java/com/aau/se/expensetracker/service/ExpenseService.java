@@ -1,10 +1,7 @@
 package com.aau.se.expensetracker.service;
-
 import com.aau.se.expensetracker.model.Expense;
 import com.aau.se.expensetracker.util.DataAccessException;
-
 import java.util.List;
-
 /**
  * Contract for expense operations (Dependency Inversion).
  */
